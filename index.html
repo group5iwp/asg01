@@ -1,0 +1,333 @@
+<!-- 
+This is a responsive, single-page "Goal Saving Tracker" website with sections for registration, login, goal tracking, and an admin dashboard. It includes animations, dynamic charting with Chart.js, and basic in-memory user and goal management.
+
+Reference (APA): Mozilla Developer Network (MDN). (n.d.). HTML Standard. https://developer.mozilla.org/en-US/docs/Web/HTML
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Meta and viewport setup for mobile responsiveness -->
+  <!-- Reference (APA): W3Schools. (n.d.). HTML Responsive Web Design. https://www.w3schools.com/html/html_responsive.asp -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Goal Saving Tracker</title>
+
+  <!-- Font Awesome for icons -->
+  <!-- Reference (APA): Font Awesome. (n.d.). Getting Started. https://fontawesome.com/v6/docs/web/setup/host-yourself/webfonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/kTcDN2j8LsNsb6j9K5qU4zYe9SEv3sb7h7y5BdPL3c4HdKm6xAc5F4VJydC5NHYJrXZTOvPL6+PRw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Chart.js for displaying savings data -->
+  <!-- Reference (APA): Chart.js. (n.d.). Getting Started. https://www.chartjs.org/docs/latest/getting-started/ -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* 
+    Custom CSS for layout, mobile responsiveness, animation, and visual style.
+    Includes sticky navigation bar, animated dollar signs, and section transitions.
+
+    Reference (APA): W3Schools. (n.d.). CSS Flexbox. https://www.w3schools.com/css/css3_flexbox.asp
+    */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom, #f0fdf4, #dcfce7);
+      overflow-x: hidden;
+    }
+
+    header {
+      position: relative;
+      text-align: center;
+      padding: 2rem;
+      background: #bbf7d0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      color: #065f46;
+      position: relative;
+      z-index: 2;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem;
+      background: #86efac;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #064e3b;
+      font-weight: bold;
+      background: #d1fae5;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    nav a:hover {
+      background: #6ee7b7;
+    }
+
+    section {
+      padding: 2rem;
+      display: none;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    canvas {
+      max-width: 400px;
+      margin: auto;
+      display: block;
+    }
+
+    .dollar-rain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .dollar-sign {
+      position: absolute;
+      color: #16a34a;
+      font-size: 1.5rem;
+      animation: fall 7s linear infinite;
+      opacity: 0.3;
+    }
+
+    @keyframes fall {
+      0% { top: -10%; }
+      100% { top: 110%; }
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    input, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+      width: 100%;
+      margin-top: 0.3rem;
+    }
+
+    .btn {
+      background-color: #34d399;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    @media screen and (max-width: 768px) {
+      header h1 {
+        font-size: 1.8rem;
+      }
+
+      nav {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="main-title">✨ Goal Saving Tracker ✨</h1>
+  </header>
+
+  <!-- Dollar sign rain animation container -->
+  <!-- Reference (APA): CSS Tricks. (n.d.). Keyframe Animation Syntax. https://css-tricks.com/snippets/css/keyframe-animation-syntax/ -->
+  <div class="dollar-rain" id="dollarRain"></div>
+
+  <!-- 
+  Navigation bar with section links.
+  Uses anchor tags to trigger section switching via JavaScript.
+  Reference (APA): W3Schools. (n.d.). How TO - Tabs. https://www.w3schools.com/howto/howto_js_tabs.asp
+  -->
+  <nav>
+    <a href="#welcome" onclick="navigate('welcome')">Welcome</a>
+    <a href="#register" onclick="navigate('register')">Register</a>
+    <a href="#login" onclick="navigate('login')">Login</a>
+    <a href="#tracker" onclick="navigate('tracker')">Tracker</a>
+    <a href="#admin" onclick="navigate('admin')">Admin</a>
+  </nav>
+
+  <!-- Sections for each page view -->
+  <section id="welcome" class="active">
+    <h2>Welcome to your personalized Goal Saving Tracker</h2>
+    <p>Track, visualize, and achieve your savings goals with ease and style!</p>
+    <button class="btn" onclick="navigate('register')">✨ Start Saving ✨</button>
+  </section>
+
+  <section id="register">
+    <h2>Register</h2>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="regEmail">
+    </div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="regUsername">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="regPassword">
+    </div>
+    <button class="btn" onclick="registerUser()">Register</button>
+  </section>
+
+  <section id="login">
+    <h2>Login</h2>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUsername">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPassword">
+    </div>
+    <button class="btn" onclick="loginUser()">Login</button>
+  </section>
+
+  <section id="tracker">
+    <h2>Goal Tracker</h2>
+    <div class="form-group">
+      <label>Goal Name</label>
+      <input type="text" id="goalName">
+    </div>
+    <div class="form-group">
+      <label>Target Amount ($)</label>
+      <input type="number" id="targetAmount">
+    </div>
+    <div class="form-group">
+      <label>Amount Saved ($)</label>
+      <input type="number" id="amountSaved">
+    </div>
+    <button class="btn" onclick="addGoal()">Add Goal</button>
+    <canvas id="goalChart"></canvas>
+  </section>
+
+  <section id="admin">
+    <h2>Admin Dashboard</h2>
+    <div id="adminStats"></div>
+  </section>
+
+  <script>
+    // Switch between visible sections based on user interaction
+    // Reference (APA): W3Schools. (n.d.). How TO - Tabs. https://www.w3schools.com/howto/howto_js_tabs.asp
+    function navigate(sectionId) {
+      document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(sectionId).classList.add('active');
+    }
+
+    // Create animated dollar signs falling down the screen
+    // Reference (APA): CSS Tricks. (n.d.). Keyframe Animation Syntax. https://css-tricks.com/snippets/css/keyframe-animation-syntax/
+    const dollarRain = document.getElementById('dollarRain');
+    for (let i = 0; i < 10; i++) {
+      const dollar = document.createElement('div');
+      dollar.classList.add('dollar-sign');
+      dollar.innerHTML = '$';
+      dollar.style.left = Math.random() * 100 + '%';
+      dollar.style.animationDelay = Math.random() * 5 + 's';
+      dollarRain.appendChild(dollar);
+    }
+
+    // User registration and login stored in memory
+    let users = [];
+    let currentUser = null;
+
+    // Register a new user and store in memory
+    // Reference (APA): MDN Web Docs. (n.d.). Array.prototype.push(). https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/push
+    function registerUser() {
+      const email = document.getElementById('regEmail').value;
+      const username = document.getElementById('regUsername').value;
+      const password = document.getElementById('regPassword').value;
+      users.push({ email, username, password, goals: [] });
+      alert('Registration successful!');
+      navigate('login');
+    }
+
+    // Basic login by matching username and password
+    // Reference (APA): MDN Web Docs. (n.d.). Array.prototype.find(). https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+    function loginUser() {
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
+        currentUser = user;
+        alert('Login successful!');
+        navigate('tracker');
+        updateAdmin();
+      } else {
+        alert('Invalid credentials.');
+      }
+    }
+
+    // Add new saving goal to the current user's list
+    function addGoal() {
+      const name = document.getElementById('goalName').value;
+      const target = parseFloat(document.getElementById('targetAmount').value);
+      const saved = parseFloat(document.getElementById('amountSaved').value);
+      if (currentUser) {
+        currentUser.goals.push({ name, target, saved });
+        renderChart();
+      }
+    }
+
+    // Render a doughnut chart showing saved amounts for each goal
+    // Reference (APA): Chart.js. (n.d.). Doughnut Chart. https://www.chartjs.org/docs/latest/charts/doughnut.html
+    let chart;
+    function renderChart() {
+      const ctx = document.getElementById('goalChart');
+      const labels = currentUser.goals.map(g => g.name);
+      const data = currentUser.goals.map(g => g.saved);
+      const background = ['#60a5fa', '#fbbf24', '#34d399', '#f87171'];
+
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Saved Amount',
+            data,
+            backgroundColor: background,
+            borderColor: '#fff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+
+    // Display all users and number of goals on admin panel
+    function updateAdmin() {
+      const stats = document.getElementById('adminStats');
+      stats.innerHTML = '<h3>Users & Goals</h3>';
+      users.forEach(u => {
+        stats.innerHTML += `<p><strong>${u.username}</strong>: ${u.goals.length} goal(s)</p>`;
+      });
+    }
+  </script>
+</body>
+</html>
